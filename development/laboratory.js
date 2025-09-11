@@ -2,7 +2,7 @@
 
 _.assign(comp, {
   laboratory: () => state.login.bidang !== 8
-  ? m('p', 'Hanya untuk petugas labor')
+  ? m('p', 'Hanya akun "petugas laboratorium" yang dapat mengakses laman ini')
   : m('.content',
     state.login.peranan === 4 && reports.laboratory(),
     m('h3', 'Laboratorium'),

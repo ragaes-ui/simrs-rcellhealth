@@ -17,7 +17,7 @@ _.assign(comp, {
     ),
 
   users: () => state.login.bidang !== 5 ?
-  m('p', 'Hanya untuk user manajemen') : m('.content',
+  m('p', 'Hanya akun "user manajemen" yang dapat mengakses laman ini') : m('.content',
     m('h3', 'Manajemen Akun'),
     m('.button.is-primary',
       {onclick: () =>

@@ -2,7 +2,7 @@
 
 _.assign(comp, {
   emergency: () => !_.includes([2, 3], state.login.peranan) ?
-  m('p', 'Hanya untuk tenaga medis') : m('.content',
+  m('p', 'Hanya akun "tenaga medis" yang dapat mengakses laman ini') : m('.content',
     {onupdate: () => [
       state.loading = true,
       db.patients.toArray(array => [
@@ -18,7 +18,7 @@ _.assign(comp, {
     state.loading && m('progress.progress.is-small.is-primary'),
     m('.box', m('table.table.is-striped',
       m('thead', m('tr',
-        ['No. MR', 'Nama Pasien', 'Jam Masuk']
+        ['No. MR', 'Nama Pasien', 'Jam Masuk', 'Aksi']
         .map(i => m('th', i))
       )),
       m('tbody',
@@ -37,12 +37,23 @@ _.assign(comp, {
           tds([
             i.identitas.no_mr,
             i.identitas.nama_lengkap,
-            hari(_.get(_.last(i.emergency), 'tanggal'), true)
+            hari(_.get(_.last(i.emergency), 'tanggal'), true),
+            // Menambahkan tombol EMR di samping setiap pasien
+            m('td', m('button.button.is-info', {
+              onclick: e => {
+                e.stopPropagation();  // Menghindari pemanggilan onClick pada baris
+                // Aksi yang dilakukan ketika tombol EMR ditekan
+                state.route = 'emrView';  // Menetapkan route untuk EMR
+                state.onePatient = i;  // Menetapkan pasien yang dipilih
+                m.redraw();
+              }
+            }, 'EMR'))
           ])
         ))
       )
-    ))
-  ),
+    ))),
+    
+    
 
   emergencyHistory: () => m('.content',
     m('.box', m('.table-container', m('table.table',
@@ -86,7 +97,17 @@ _.assign(comp, {
                 m('.button.is-info',
                   {onclick: () => makePdf.soap(state.onePatient.identitas, i)},
                   makeIconLabel('print', 'Cetak SOAP')
-                )
+                ),
+                                // Menambahkan tombol Edit SOAP
+                                m('.button.is-warning',
+                                  {onclick: () => {
+                                    // Mengarahkan ke halaman formSoap untuk edit SOAP
+                                    state.route = 'formSoap';
+                                    state.oneRawat = i;  // Menetapkan rawat jalan atau emergency yang akan diubah SOAP-nya
+                                    m.redraw();
+                                  }},
+                                  'Edit SOAP'
+                                ),
               )
             )
           },

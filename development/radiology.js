@@ -2,7 +2,7 @@
 
 _.assign(comp, {
   radiology: () => state.login.bidang !== 9
-  ? m('p', 'Hanya untuk petugas radiologi')
+  ? m('p', 'Hanya akun "user radiologi" yang dapat mengakses laman ini')
   : m('.content',
     state.login.peranan === 4 && reports.radiology(),
     m('h3', 'Radiologi'),

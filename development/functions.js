@@ -104,6 +104,13 @@ menus = {
       database: {full: 'Database', icon: 'database'}
     }
   },
+    integrasiSystem: { // Menu Integrasi System
+    full: 'Integrasi System', icon: 'cogs',
+    children: { // Menambahkan submenu dalam "Integrasi System"
+      cekPeserta: {full: 'Cek Peserta', icon: 'user-check'},
+      sep: {full: 'SEP', icon: 'file-medical'}
+    }
+  },
   gizi: {full: 'Gizi', icon: 'utensils'},
   telemed: {full: 'Telemedic', icon: 'headset'}
 },

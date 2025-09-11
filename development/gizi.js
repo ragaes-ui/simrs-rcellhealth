@@ -2,7 +2,7 @@
 
 _.assign(comp, {
   gizi: () => state.login.bidang !== 10
-  ? m('p', 'Hanya untuk user bidang Gizi')
+  ? m('p', 'Hanya akun "user bidang gizi" yang dapat mengakses laman ini')
   : m('.content',
     m('h1', 'Daftar konsumsi pasien inap'),
     m('.box', m('.table-container', m('table.table.is-striped',

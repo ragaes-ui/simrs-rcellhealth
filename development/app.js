@@ -6,7 +6,7 @@ _.assign(comp, {
     m('.navbar-brand',
       m('a.navbar-item',
         {onclick: () => state.route = 'dashboard'},
-        'SIMRS.dev'
+        'SIMRS.RCELLHEALTH + (DEV)'
       ),
       m('.navbar-burger',
         {
@@ -227,16 +227,30 @@ _.assign(comp, {
             localStorage.setItem('login', JSON.stringify(res)),
             m.redraw()
           ] : [
-            _.assign(state, {login: false, error: 'Password salah'}),
+            _.assign(state, {login: false, error: 'username atau password salah, silahkan coba kembali !'}),
             m.redraw()
           ])
         ]
-      }))
-     ),
+      })),
+            m('.column', [
+        m('input[type="checkbox"]', {
+          id: 'rememberMe',
+          checked: state.rememberMe,
+          onchange: (e) => state.rememberMe = e.target.checked
+        }),
+        m('label', { for: 'rememberMe' }, 'Remember Me')
+      ]),
+      m('div.has-text-centered',
+        m('a', { href: '#', onclick: () => {
+          state.route = 'resetPassword'; // Mengubah route ke halaman resetPassword
+          m.redraw(); // Memastikan tampilan diperbarui
+          alert("Silahkan hubungi administrator aplikasi jika Anda mengalami lupa password.");
+        }}, 'Forgot your Password?')
+      )
+    ),
     m('.column')
   ))
-})
-
+});
 io().on('connect', socket => [
   state.login = localStorage.login &&
     JSON.parse(localStorage.login || '{}'),
@@ -251,6 +265,11 @@ io().on('connect', socket => [
       ], localStorage.bulmaTheme || defaultTheme),
       !Boolean(localStorage.bulmaTheme)
     ]) && 'has-background-light'},
+  // Notifikasi error untuk koneksi terputus
+  state.error && m('.notification.is-danger.is-light', [
+    m('button.delete', { onclick: () => state.error = false }),
+    state.error
+  ]),
     comp.navbar(), m('section.section', m('.container',
       {style: 'min-height:100vh'},
       state.username || _.get(state, 'login.username') ?
@@ -259,11 +278,14 @@ io().on('connect', socket => [
     m('footer.footer',
       {style: 'padding:0px'},
       m('.content', m('a.help.has-text-grey', {
-        href: 'https://github.com/rikyperdana/simrs',
+        href: 'https://github.com/ragaes-ui/simrs.git',
         target: '_blank',
         style: 'text-align:center'
-      }, 'Hak Cipta: SIMRS.dev (2019); Versi 4.8.0'))
+      }, 'Copyright: RCELLHEALTH + BY RAGA IT KIS (2023); Versi 4.8.0'))
     ),
+    m('.content', {
+      style: 'text-align:center; font-size: 18px; color: #aaa;'
+    }, 'COLLABORATION BY: RCELLCLOUD-INC'),
     m('link', {rel: 'stylesheet', href:'https://unpkg.com/bulmaswatch/'+
       (localStorage.bulmaTheme || defaultTheme)
     +'/bulmaswatch.min.css'})
@@ -272,6 +294,9 @@ io().on('connect', socket => [
   io().on('datachange', (name, doc) => [
     db[name].put(doc), state.lastSync = _.now(), m.redraw()
   ]),
-  // jika koneksi sempat terputus, langsung reload halaman
-  io().on('disconnect', () => location.reload())
-])
+  // Tambahkan event handler disconnect di bawah sini
+io().on('disconnect', () => {
+  state.error = "Koneksi ke server database terputus. Mohon periksa konfigurasi database anda.";
+  m.redraw(); // Perbarui tampilan
+})
+]);

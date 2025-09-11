@@ -108,6 +108,16 @@ _.assign(comp, {
                   {onclick: () => makePdf.soap(state.onePatient.identitas, i)},
                   makeIconLabel('print', 'Cetak SOAP')
                 ),
+                                                // Menambahkan tombol Edit SOAP
+                                                m('.button.is-warning',
+                                                  {onclick: () => {
+                                                    // Mengarahkan ke halaman formSoap untuk edit SOAP
+                                                    state.route = 'formSoap';
+                                                    state.oneRawat = i;  // Menetapkan rawat jalan atau emergency yang akan diubah SOAP-nya
+                                                    m.redraw();
+                                                  }},
+                                                  'Edit SOAP'
+                                                ),
                 _.get(i.soapDokter, 'labor') && m('.button.is-info',
                   {onclick: () => makePdf.labor(
                     state.onePatient.identitas, i.soapDokter.labor

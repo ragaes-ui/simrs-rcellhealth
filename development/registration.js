@@ -1,65 +1,67 @@
-/*global _ comp m state db hari autoForm schemas insertBoth updateBoth randomId tds withAs ands startOfTheDay moment makeIconLabel reports layouts*/
-
 _.assign(comp, {
-  registration: () => state.login.bidang !== 1 ?
-  m('p', 'Hanya untuk user pendaftaran') : m('.content',
-    state.login.peranan === 4 && [
-      reports.outpatient(),
-      reports.igd(),
-      reports.inpatient(),
-    ],
-    m('h1', 'Pencarian Pasien'),
-    m('.control.is-expanded', m('input.input.is-fullwidth', {
-      type: 'text', placeholder: 'Cari dengan nama lengkap atau No. MR',
-      onkeypress: e => [
-        ands([
-          e.key === 'Enter',
-          e.target.value.length > 3
-        ]) && [
-          state.loading = true, m.redraw(),
-          db.patients.filter(i => _.includes(
-            _.lowerCase(i.identitas.nama_lengkap)+i.identitas.no_mr,
-            _.lowerCase(e.target.value)
-          )).toArray(array => [
-            _.assign(state, {
-              searchPatients: array,
-              loading: false
-            }), m.redraw()
-          ])
-        ]
-      ]
-    })), m('br'),
-    state.loading && m('progress.progress.is-small.is-primary'),
-    state.searchPatients && m('p.help', '* Berurut berdasarkan tanggal lahir'),
-    m('.box', m('.table-container', m('table.table.is-striped',
-      m('thead', m('tr',
-        ['Kunjungan Terakhir', 'No. MR', 'Nama lengkap', 'Tanggal lahir', 'Tempat lahir', 'Alamat']
-        .map(i => m('th', i))
-      )),
-      m('tbody',
-        (state.searchPatients || [])
-        .sort((a, b) => a.identitas.tanggal_lahir - b.identitas.tanggal_lahir)
-        .map(i => m('tr',
-          {onclick: () => _.assign(state, {
-            route: 'onePatient', onePatient: i, searchPatients: null
-          })},
-          tds([
-            hari(_.get(_.last([...(i.rawatJalan || []), ...(i.emergency || [])]), 'tanggal')),
-            i.identitas.no_mr, i.identitas.nama_lengkap,
-            hari(i.identitas.tanggal_lahir), i.identitas.tempat_lahir, i.identitas.tempat_tinggal
-          ])
-        ))
-      )
-    ))),
-    state.searchPatients &&
-    m('.button.is-primary',
-      {onclick: () => _.assign(state, {
-        route: 'newPatient', searchPatients: null
-      })},
-      makeIconLabel('user-plus', 'Pasien baru')
-    )
-  ),
+  registration: () => {
+    // Memeriksa apakah bidang adalah 1 atau peranan adalah 4 (admin)
+    if (state.login.bidang === 1 || state.login.peranan === 4) {
+      // Menampilkan konten jika kondisi terpenuhi
+      return m('.content', [
+        state.login.peranan === 4 && [
+          reports.outpatient(),
+          reports.igd(),
+          reports.inpatient(),
+        ],
+        m('h1', 'Pencarian Pasien'),
+        m('.control.is-expanded', m('input.input.is-fullwidth', {
+          type: 'text', placeholder: 'search pasien terdaftar',
+          onkeypress: e => [
+            ands([e.key === 'Enter', e.target.value.length > 3]) && [
+              state.loading = true, m.redraw(),
+              db.patients.filter(i => _.includes(
+                _.lowerCase(i.identitas.nama_lengkap) + i.identitas.no_mr,
+                _.lowerCase(e.target.value)
+              )).toArray(array => [
+                _.assign(state, {
+                  searchPatients: array,
+                  loading: false
+                }), m.redraw()
+              ])
+            ]
+          ]
+        })),
+        m('br'),
+        state.loading && m('progress.progress.is-small.is-primary'),
+        state.searchPatients && m('p.help', '* Berurut berdasarkan tanggal lahir'),
+        m('.box', m('.table-container', m('table.table.is-striped',
+          m('thead', m('tr',
+            ['Kunjungan Terakhir', 'No. MR', 'Nama lengkap', 'Tanggal lahir', 'Tempat lahir', 'Alamat']
+            .map(i => m('th', i))
+          )),
+          m('tbody',
+            (state.searchPatients || [])
+            .sort((a, b) => a.identitas.tanggal_lahir - b.identitas.tanggal_lahir)
+            .map(i => m('tr',
+              {onclick: () => _.assign(state, {
+                route: 'onePatient', onePatient: i, searchPatients: null
+              })},
+              tds([
+                hari(_.get(_.last([...(i.rawatJalan || []), ...(i.emergency || [])]), 'tanggal')),
+                i.identitas.no_mr, i.identitas.nama_lengkap,
+                hari(i.identitas.tanggal_lahir), i.identitas.tempat_lahir, i.identitas.tempat_tinggal
+              ])
+            ))
+          )
+        ))),
+        m('.button.is-primary', 
+          {onclick: () => _.assign(state, { route: 'newPatient', searchPatients: null })}, 
+          makeIconLabel('user-plus', 'Pasien baru')
+        )
+      ]);
+    } else {
+      // Menampilkan pesan untuk pengguna yang tidak diizinkan mengakses
+      return m('p', 'Hanya user pendaftaran dan admin yang dapat mengakses halaman ini');
+    }
+  },
 
+  // Fungsi lainnya tetap sama, seperti `newPatient`, `updatePatient`, `poliVisit`, dll.
   newPatient: () => m('.content',
     m('h3', 'Pendaftaran Pasien Baru'),
     m('.buttons',
@@ -95,7 +97,7 @@ _.assign(comp, {
       )
     }))
   ),
-
+  
   updatePatient: () => m('.content',
     m('h3', 'Update identitas pasien'),
     m(autoForm({
@@ -127,7 +129,7 @@ _.assign(comp, {
         updateBoth('patients', state.onePatient._id, _.assign(
           state.onePatient, {rawatJalan: [
             ...(state.onePatient.rawatJalan || []),
-            _.merge(doc, {antrian: array.length+1})
+            _.merge(doc, {antrian: array.length + 1})
           ]}
         )),
         doc.no_antrian && db.queue.toArray(arr => withAs(
@@ -139,4 +141,4 @@ _.assign(comp, {
       ])
     })))
   )
-})
+});

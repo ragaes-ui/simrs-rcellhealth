@@ -65,7 +65,7 @@ _.assign(comp, {
         ),
         m('a.button.is-info',
           {
-            href: 'https://wa.me/628117696000?text=simrs.dev',
+            href: 'https://wa.me/6287782691132?text= contact us cs: simrs.rcellmedic',
             target: '_blank'
           },
           makeIconLabel('envelope-open-text', 'Kritik/Saran')
